@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'io.agenttroll'
+version '1.0-SNAPSHOT'
+
+// Gradle setup is stolen from here:
+// https://gist.github.com/mrbald/7bbb5113c3164d5243314da8c28649a1
+
+sourceSets {
+    jmh {
+        java.srcDirs = ['src/jmh/java']
+        compileClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+task jmh(type: JavaExec, dependsOn: jmhClasses) {
+    main = 'org.openjdk.jmh.Main'
+    classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    jmhImplementation 'org.openjdk.jmh:jmh-core:1.23'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.23'
+}
+
+classes.finalizedBy(jmhClasses)
