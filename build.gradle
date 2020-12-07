@@ -5,6 +5,9 @@ plugins {
 group 'io.agenttroll'
 version '1.0-SNAPSHOT'
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 // Gradle setup is stolen from here:
 // https://gist.github.com/mrbald/7bbb5113c3164d5243314da8c28649a1
 
@@ -21,12 +24,15 @@ task jmh(type: JavaExec, dependsOn: jmhClasses) {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     jmhImplementation 'org.openjdk.jmh:jmh-core:1.23'
     jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.23'
+
+    jmhImplementation 'com.nesaak:NoReflection:0.1-SNAPSHOT'
 }
 
 classes.finalizedBy(jmhClasses)

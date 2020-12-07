@@ -1,10 +1,11 @@
 package io.github.agenttroll.reflectbench;
 
+import com.nesaak.noreflection.NoReflection;
+import com.nesaak.noreflection.access.DynamicCaller;
 import org.openjdk.jmh.annotations.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
@@ -15,11 +16,16 @@ import java.util.concurrent.TimeUnit;
 public class ReflectBench {
     private static final Method incrMethod;
     private static final Method incrMethodNoReturn;
+    private static final DynamicCaller incrDynCaller;
+    private static final DynamicCaller incrDynCallerNoReturn;
     private static final MethodHandle incrMh;
+
     static {
         try {
             incrMethod = Counter.class.getMethod("incr");
             incrMethodNoReturn = Counter.class.getMethod("incrNoReturn");
+            incrDynCaller = NoReflection.shared().get(incrMethod);
+            incrDynCallerNoReturn = NoReflection.shared().get(incrMethodNoReturn);
             incrMh = MethodHandles.lookup().unreflect(incrMethod);
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -38,18 +44,23 @@ public class ReflectBench {
     }
 
     @Benchmark
-    public Object reflection() throws ReflectiveOperationException {
+    public int invokedynamic() {
+        return this.counter.incr();
+    }
+
+    @Benchmark
+    public Object reflectionAndBox() throws ReflectiveOperationException {
         return incrMethod.invoke(this.counter);
     }
 
     @Benchmark
-    public Object methodHandle() throws Throwable {
-        return incrMh.invoke(this.counter);
+    public Object dynCallerAndBox() {
+        return incrDynCaller.call(this.counter);
     }
 
     @Benchmark
-    public int invokedynamic() {
-        return this.counter.incr();
+    public Object mh() throws Throwable {
+        return incrMh.invoke(this.counter);
     }
 
     @Benchmark
@@ -65,6 +76,11 @@ public class ReflectBench {
     @Benchmark
     public void reflectionNoReturn() throws ReflectiveOperationException {
         incrMethodNoReturn.invoke(this.counter);
+    }
+
+    @Benchmark
+    public void dynCallerNoReturn() {
+        incrDynCallerNoReturn.call(this.counter);
     }
 
     private static class Counter {
