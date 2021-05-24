@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'io.agenttroll'
+group 'io.github.caojohnny'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
